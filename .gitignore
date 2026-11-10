@@ -2,4 +2,3 @@ out/
 cache/
 broadcast/
 .env
-lib/

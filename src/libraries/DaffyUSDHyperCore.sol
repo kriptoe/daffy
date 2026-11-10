@@ -25,7 +25,7 @@ interface ICoreDepositWallet {
 ///         b. buy HYPE with earmarked USDC, IOC on spot, in chunks
 ///         c. rally trims: HYPE over 80% of the treasury and within 10% of its high -> sell back
 ///            to 70%. Never otherwise: HYPE is never sold into a dump
-///         d. refill the DAFF/HYPE pool bid by sending HYPE to the EVM, capped per week
+///         d. refill the DAFFY/HYPE pool bid by sending HYPE to the EVM, capped per week
 ///         e. supply idle USDC to HyperCore lending (the dip fund)
 ///
 ///         HyperCore facts this relies on (VERIFY on mainnet with test mode first):
@@ -82,7 +82,7 @@ library DaffyUSDHyperCore {
         uint16 trimShareBps; // 8000: trim when HYPE is over 80% of the treasury...
         uint16 trimTargetBps; // 7000: ...back down to 70%...
         uint16 trimNearHighBps; // 9000: ...only while HYPE is within 10% of its high
-        uint16 hypeBidBps; // 1500: DAFF/HYPE pool bid target, share of the treasury
+        uint16 hypeBidBps; // 1500: DAFFY/HYPE pool bid target, share of the treasury
         uint16 refillCapBps; // 500: most HYPE sent to the bid per window, share of all treasury HYPE
         uint16 slippageBps; // 100: IOC limit 1% through the oracle
         uint32 refillWindow; // 7 days
@@ -136,7 +136,7 @@ library DaffyUSDHyperCore {
         uint256 total; // everything, in USD
         uint256 hypeAllUsd; // every HYPE the treasury holds, in USD
         uint256 hypeAll; // every HYPE the treasury holds, in HYPE
-        uint256 hypeBidUsd; // HYPE in or waiting for the DAFF/HYPE bid, in USD
+        uint256 hypeBidUsd; // HYPE in or waiting for the DAFFY/HYPE bid, in USD
     }
 
     error PrecompileFailed(address precompile);
@@ -350,7 +350,7 @@ library DaffyUSDHyperCore {
             }
         }
 
-        // d. refill the DAFF/HYPE pool bid from HYPE held here
+        // d. refill the DAFFY/HYPE pool bid from HYPE held here
         uint256 target = (t.total * r.hypeBidBps) / BPS;
         if (!s.seeded && t.hypeBidUsd * 10 >= target * 9 && t.hypeBidUsd > 0) s.seeded = true;
         if (t.hypeBidUsd * 10 < target * 9 && n.borrowed == 0) {

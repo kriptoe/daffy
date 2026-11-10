@@ -6,13 +6,13 @@ import {TickMath} from "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 import {LiquidityAmounts} from "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol";
 import {DaffyMath} from "./DaffyMath.sol";
 
-/// @title DaffyUSDPools - the treasury's one-sided positions in a DAFF/quote pool
+/// @title DaffyUSDPools - the treasury's one-sided positions in a DAFFY/quote pool
 /// @notice Linked library (DELEGATECALL), so the pool sees DaffyUSD as the owner and calls its mint
-///         callback. Prices are quote raw units per DAFF raw unit, in WAD (so for USDC, with 6
-///         decimals, $1 per DAFF is 1e6). Every position sits on one side of the current price:
+///         callback. Prices are quote raw units per DAFFY raw unit, in WAD (so for USDC, with 6
+///         decimals, $1 per DAFFY is 1e6). Every position sits on one side of the current price:
 ///         - bid: quote token only, in [low, high] x NAV, never above the pool price
-///         - ask: DAFF only, in [low, high] x NAV, never below the pool price
-///         So the treasury never buys DAFF above its bid range or sells it below its ask range.
+///         - ask: DAFFY only, in [low, high] x NAV, never below the pool price
+///         So the treasury never buys DAFFY above its bid range or sells it below its ask range.
 library DaffyUSDPools {
     uint256 internal constant WAD = 1e18;
 
@@ -73,7 +73,7 @@ library DaffyUSDPools {
     }
 
     /// @notice Place a bid of `quoteAmt` and an ask of `daffAmt` around `nav`. The core's mint callback
-    ///         pays the quote token and mints the DAFF.
+    ///         pays the quote token and mints the DAFFY.
     function place(
         Book storage b,
         IUniswapV3Pool pool,
@@ -113,7 +113,7 @@ library DaffyUSDPools {
         b.navAtPlace = nav;
         b.placedAt = uint64(block.timestamp);
 
-        // bid: quote token. Quote is token1 when DAFF is token0 (sits below the tick), else token0.
+        // bid: quote token. Quote is token1 when DAFFY is token0 (sits below the tick), else token0.
         uint256 top = (nav * r.bidHighMult) / WAD;
         if (spot < top) top = spot;
         (int24 lo, int24 hi) = _sorted(
@@ -132,7 +132,7 @@ library DaffyUSDPools {
         }
         (b.bidLo, b.bidHi, b.bidLiq) = (lo, hi, liq);
 
-        // ask: DAFF. DAFF is token0 above the tick when it is token0, else token1 below it.
+        // ask: DAFFY. DAFFY is token0 above the tick when it is token0, else token1 below it.
         uint256 bottom = (nav * r.askLowMult) / WAD;
         if (spot > bottom) bottom = spot;
         (lo, hi) = _sorted(

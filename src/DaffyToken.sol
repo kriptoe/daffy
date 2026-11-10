@@ -3,7 +3,7 @@ pragma solidity 0.8.28;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-/// @title Daffy ($DAFF) - Degenerate Assistance Fund Fund
+/// @title Daffy ($DAFFY) - Degenerate Assistance Fund Fund
 /// @notice A plain ERC-20 that never moves or changes. It stores one address, the current core,
 ///         which is the only contract allowed to mint and burn. A migration points the token at a
 ///         new core; holders never need to swap tokens.
@@ -13,7 +13,7 @@ contract DaffyToken is ERC20 {
     address public core;
 
     /// @notice User-to-user transfers are locked until the launch is finalized, so nobody can
-    ///         trade or LP DAFF before the protocol pool is seeded. One-way switch.
+    ///         trade or LP DAFFY before the protocol pool is seeded. One-way switch.
     bool public transfersEnabled;
 
     event CoreChanged(address indexed oldCore, address indexed newCore);
@@ -28,7 +28,7 @@ contract DaffyToken is ERC20 {
         _;
     }
 
-    constructor(address core_) ERC20("Daffy", "DAFF") {
+    constructor(address core_) ERC20("Daffy", "DAFFY") {
         if (core_ == address(0)) revert ZeroAddress();
         core = core_;
         emit CoreChanged(address(0), core_);

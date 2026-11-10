@@ -18,12 +18,12 @@ interface IDaffyUSDSuccessor {
 }
 
 /// @title DaffyUSD - Daffy v2, the USDC model
-/// @notice USDC deposits mint DAFF 1:1 ($1 NAV). At launch the treasury is split:
-///         - 70% HYPE: 55% held on HyperCore, 15% as a bid in the DAFF/HYPE pool
+/// @notice USDC deposits mint DAFFY 1:1 ($1 NAV). At launch the treasury is split:
+///         - 70% HYPE: 55% held on HyperCore, 15% as a bid in the DAFFY/HYPE pool
 ///         - 20% dip fund: USDC supplied to HyperCore lending, spent on big HYPE drops
-///         - 10% USDC bid in the DAFF/USDC pool
-///         Holders exit by selling DAFF into either pool; the treasury's bids sit at 0.6-0.8x NAV
-///         and the DAFF they buy is burned. Its only asks sit at 2x NAV and up. Nothing defends NAV,
+///         - 10% USDC bid in the DAFFY/USDC pool
+///         Holders exit by selling DAFFY into either pool; the treasury's bids sit at 0.6-0.8x NAV
+///         and the DAFFY they buy is burned. Its only asks sit at 2x NAV and up. Nothing defends NAV,
 ///         there is no redeem function, and HYPE is sold only in trims after a rally.
 /// @dev Unofficial parody, not affiliated with Hyperliquid.
 contract DaffyUSD is ReentrancyGuard {
@@ -43,7 +43,7 @@ contract DaffyUSD is ReentrancyGuard {
         uint256 earlyLaunchUsdc; // 10_000_000e6: at this, anyone can launch before the window ends
         uint16 hypeBps; // 7000: share bought as HYPE at launch (includes the HYPE bid)
         uint16 usdcBidBps; // 1000: USDC bid at launch; the rest (20%) is the dip fund
-        uint16 askBps; // 1000: DAFF offered in each pool's ask, share of circulating DAFF
+        uint16 askBps; // 1000: DAFFY offered in each pool's ask, share of circulating DAFFY
         uint16 recenterMoveBps; // 1000: re-place a pool's positions when NAV moved 10%...
         uint32 recenterInterval; // ...or after 7 days
         uint16 incomingHypeBps; // 7000: share of incoming USDC that buys HYPE
@@ -149,7 +149,7 @@ contract DaffyUSD is ReentrancyGuard {
         launchEnd = block.timestamp + p.launchDuration;
         token = new DaffyToken(address(this));
 
-        // DAFF/USDC starts at $1. DAFF/HYPE gets its starting price ($1 of HYPE) at launch: the
+        // DAFFY/USDC starts at $1. DAFFY/HYPE gets its starting price ($1 of HYPE) at launch: the
         // HYPE oracle is a HyperCore precompile, which local simulations (forge script) don't have.
         (poolUsdc, daffIsToken0U, spacingU) = _pool(factory, usdc_, fee, WAD / 1e12);
         (poolHype, daffIsToken0H, spacingH) = _pool(factory, whype_, fee, 0);
@@ -159,7 +159,7 @@ contract DaffyUSD is ReentrancyGuard {
 
     // ------------------------------------------------------------------ deposits and launch
 
-    /// @notice Deposit USDC (6 decimals) before launch for DAFF 1:1.
+    /// @notice Deposit USDC (6 decimals) before launch for DAFFY 1:1.
     function deposit(uint256 amount) external nonReentrant {
         if (launched || block.timestamp >= launchEnd) revert DepositWindowClosed();
         if (amount == 0) revert ZeroAmount();
@@ -169,7 +169,7 @@ contract DaffyUSD is ReentrancyGuard {
         emit Deposited(msg.sender, amount);
     }
 
-    /// @notice Before launch, hand back DAFF (approve this contract first) for the USDC 1:1. Stays open
+    /// @notice Before launch, hand back DAFFY (approve this contract first) for the USDC 1:1. Stays open
     ///         for good if the window ends under the minimum and Daffy never launches.
     function withdrawDeposit(uint256 daffAmount) external nonReentrant {
         if (launched) revert AlreadyLaunched();
@@ -240,7 +240,7 @@ contract DaffyUSD is ReentrancyGuard {
 
     // ------------------------------------------------------------------ views
 
-    /// @notice NAV in USD per DAFF (WAD). DAFF held by the treasury or sitting in its pool
+    /// @notice NAV in USD per DAFFY (WAD). DAFFY held by the treasury or sitting in its pool
     ///         positions isn't circulating.
     function navUsd() public view returns (uint256 nav) {
         (,, nav) = _totals();
@@ -283,7 +283,7 @@ contract DaffyUSD is ReentrancyGuard {
         return usdcPool ? bookU : bookH;
     }
 
-    /// @notice Top of each bid range (pool units: USDC raw per DAFF raw, HYPE per DAFF; WAD).
+    /// @notice Top of each bid range (pool units: USDC raw per DAFFY raw, HYPE per DAFFY; WAD).
     function bidTops() external view returns (uint256 usdcPool, uint256 hypePool) {
         return (bookU.bidTop(daffIsToken0U), bookH.bidTop(daffIsToken0H));
     }
@@ -331,7 +331,7 @@ contract DaffyUSD is ReentrancyGuard {
         emit MigrationCancelled();
     }
 
-    /// @notice After the timelock: take both pools' positions out, burn the DAFF, hand the token to
+    /// @notice After the timelock: take both pools' positions out, burn the DAFFY, hand the token to
     ///         the successor and forward everything. HyperCore is emptied by forwardToSuccessor().
     function executeMigration() external onlyMigrator nonReentrant {
         if (successor == address(0) || migrationReadyAt == 0 || block.timestamp < migrationReadyAt) {
@@ -400,7 +400,7 @@ contract DaffyUSD is ReentrancyGuard {
         DaffyUSDHyperCore.rawAction(kind, actionParams);
     }
 
-    /// @notice Take both pools' positions out to this contract (DAFF burned).
+    /// @notice Take both pools' positions out to this contract (DAFFY burned).
     function testPullPools() external onlyTester nonReentrant {
         _pullPools();
     }

@@ -1,4 +1,4 @@
-# Daffy ($DAFF) — Degenerate Assistance Fund Fund
+# Daffy ($DAFFY) — Degenerate Assistance Fund Fund
 
 A HyperEVM meme token backed by a USDC-launched treasury that goes 75% HYPE, buys big dips and only
 sells HYPE after a rally. Unofficial parody of Hyperliquid's Assistance Fund — not affiliated with
@@ -9,7 +9,7 @@ Hyperliquid.
 
 ## How it works
 
-**Deposits.** USDC deposits mint DAFF 1:1, so NAV starts at $1. The window is 7 days. Daffy
+**Deposits.** USDC deposits mint DAFFY 1:1, so NAV starts at $1. The window is 7 days. Daffy
 launches after it if at least $100,000 is in, or as soon as deposits reach $10M (anyone can call
 `finalizeLaunch()`). Until launch anyone can `withdrawDeposit` for their USDC back 1:1; if the
 window ends under $100,000 it never launches and withdrawals stay open for good. `launchStatus()`
@@ -20,20 +20,20 @@ At launch the treasury is split:
 | Part | Share | Where |
 | --- | --- | --- |
 | HYPE held | 55% | HYPE spot on HyperCore |
-| HYPE bid | 20% | WHYPE bid in the DAFF/WHYPE pool, 0.6–0.8× NAV |
+| HYPE bid | 20% | WHYPE bid in the DAFFY/WHYPE pool, 0.6–0.8× NAV |
 | Dip fund | 20% | USDC supplied to HyperCore lending |
-| USDC bid | 5% | USDC bid in the DAFF/USDC pool, 0.6–0.8× NAV |
+| USDC bid | 5% | USDC bid in the DAFFY/USDC pool, 0.6–0.8× NAV |
 
 Most exit money sits in the HYPE bid on purpose. Measured in HYPE, NAV rises when HYPE falls, so
 in a crash the HYPE bid ends up further under NAV and can't overpay sellers. The USDC bid can, until
 the next re-placement, so it's kept small: with nobody calling upkeep through a 70% HYPE crash it
 could overpay by at most about 1.4% of the treasury.
 
-- **Exits.** There is no redeem function. Holders sell DAFF into either pool. The treasury's bids sit
-  at 0.6–0.8× NAV and never above the pool price, and the DAFF they buy is burned at the next
+- **Exits.** There is no redeem function. Holders sell DAFFY into either pool. The treasury's bids sit
+  at 0.6–0.8× NAV and never above the pool price, and the DAFFY they buy is burned at the next
   re-placement, so every exit raises NAV for those who stay. Nothing defends NAV.
-- **Premium.** The treasury's only DAFF asks sit at 2–10× NAV in both pools (10% of circulating DAFF
-  each), so new DAFF is only ever minted at a premium.
+- **Premium.** The treasury's only DAFFY asks sit at 2–10× NAV in both pools (10% of circulating DAFFY
+  each), so new DAFFY is only ever minted at a premium.
 - **Dip buys.** HYPE 25% / 40% / 55% below its highest upkeep price → a third of the dip fund comes
   out of lending and buys HYPE (the last tranche takes the rest). The levels reset at a new high.
   After bigger runs the dips must be deeper: every tranche moves 5 points deeper for each 50% the
@@ -41,7 +41,7 @@ could overpay by at most about 1.4% of the treasury.
   −45% / −60%; from $195 up, −40% / −55% / −70%). `dipLevels()` returns today's three prices.
 - **Rally trims.** HYPE over 85% of the treasury and within 10% of its high → sell back to 75%. The
   USDC goes to the dip fund. HYPE is never sold otherwise.
-- **HYPE bid refills.** HYPE held on HyperCore tops up the DAFF/WHYPE bid, at most 5% of the
+- **HYPE bid refills.** HYPE held on HyperCore tops up the DAFFY/WHYPE bid, at most 5% of the
   treasury's HYPE per week after the first fill.
 - **Incoming USDC** (premium sales, USDC fees): kept for the USDC bid up to its 5% target, then
   75% buys HYPE and 25% goes to the dip fund.
@@ -114,7 +114,7 @@ Test mode: `testWithdraw(to, usdc, hype)`, `testCoreAction(kind, params)`, `test
 ## Deposit page
 
 `frontend/index.html` is a single file: connect a wallet (it switches to HyperEVM), deposit USDC
-(approve, then deposit), withdraw before launch (approve DAFF, then withdraw), with the deposit
+(approve, then deposit), withdraw before launch (approve DAFFY, then withdraw), with the deposit
 total, the progress to $100,000 and $10M, and the countdown up top. It reads the chain through
 `https://rpc.hyperliquid.xyz/evm`, so the total shows without a wallet.
 
@@ -169,9 +169,9 @@ or slippage.
 
 ```
 src/DaffyUSD.sol                     core: deposits, launch, pools, upkeep, migration, test mode
-src/DaffyToken.sol                   the DAFF ERC-20 (core can be handed to a successor)
+src/DaffyToken.sol                   the DAFFY ERC-20 (core can be handed to a successor)
 src/libraries/DaffyUSDHyperCore.sol  HyperCore: HYPE buys, dip tranches, trims, refills, lending
-src/libraries/DaffyUSDPools.sol      one-sided bids and asks in a DAFF/quote pool
+src/libraries/DaffyUSDPools.sol      one-sided bids and asks in a DAFFY/quote pool
 src/libraries/DaffyMath.sol          price, tick and liquidity maths
 script/DeployUSD.s.sol               deploy script (mainnet defaults)
 script/lookup_indices.py             print HyperCore indices for mainnet or testnet

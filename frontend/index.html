@@ -3,109 +3,143 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070b0e">
+<meta property="og:image" content="daffy.jpg">
 <title>Daffy</title>
-<meta name="description" content="Deposit USDC for DAFF before launch, then trade DAFF against the treasury's pools.">
+<meta name="description" content="Deposit USDC for DAFFY before launch, then trade DAFFY against the treasury's pools.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&family=Permanent+Marker&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #eef1f4;
-    --panel: #ffffff;
-    --ink: #14203a;
-    --muted: #5b6680;
-    --rule: #c9d0da;
-    --track: #dde3ea;
-    --accent: #ff5a1f;
-    --accent-ink: #ffffff;
-    --good: #1f8a5b;
-    --bad: #c2342b;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --paper: #0f1626;
-      --panel: #172035;
-      --ink: #e7ecf3;
-      --muted: #9aa5bb;
-      --rule: #2b3650;
-      --track: #232e46;
-      --accent: #ff6a33;
-      --accent-ink: #120a06;
-      --good: #3fbf87;
-      --bad: #f07067;
-    }
+    color-scheme: dark;
+    --paper: #070b0e;
+    --panel: #0e1519;
+    --panel-2: #121c21;
+    --ink: #e9f3f1;
+    --muted: #8aa29d;
+    --rule: #1f2e33;
+    --track: #16242a;
+    --mint: #5ff0c9;
+    --mint-dim: #2a7d69;
+    --accent: #5ff0c9;
+    --accent-ink: #04140f;
+    --beak: #ff9a2e;
+    --good: #5ff0c9;
+    --bad: #ff6b57;
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
-    background: var(--paper);
     color: var(--ink);
+    background:
+      radial-gradient(900px 600px at 15% -10%, rgba(95,240,201,.10), transparent 60%),
+      radial-gradient(700px 500px at 110% 30%, rgba(255,154,46,.07), transparent 60%),
+      var(--paper);
+    background-attachment: fixed;
     font-family: "Archivo", system-ui, sans-serif;
     font-variation-settings: "wdth" 100;
     font-size: 17px;
     line-height: 1.5;
+    min-height: 100vh;
   }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 20px 16px 48px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 20px 16px 48px; }
 
   header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .mark { font-weight: 800; font-variation-settings: "wdth" 125; font-size: 20px; letter-spacing: -0.01em; }
-  .mark small { font-weight: 500; color: var(--muted); font-size: 15px; margin-left: 6px; font-variation-settings: "wdth" 100; }
+  .mark { font-family: "Permanent Marker", "Archivo", cursive; font-size: 30px; line-height: 1; color: var(--mint); letter-spacing: .02em; text-shadow: 0 0 18px rgba(95,240,201,.35); }
+  .mark small { font-family: "Archivo", sans-serif; font-weight: 700; color: var(--muted); font-size: 14px; margin-left: 8px; letter-spacing: .08em; text-shadow: none; }
 
   button, input { font: inherit; color: inherit; }
   .btn {
-    border: 2px solid var(--ink); background: transparent; border-radius: 999px;
-    padding: 8px 16px; font-weight: 650; cursor: pointer; white-space: nowrap;
+    border: 1.5px solid var(--mint-dim); background: rgba(95,240,201,.06); border-radius: 999px; color: var(--mint);
+    padding: 8px 16px; font-weight: 700; cursor: pointer; white-space: nowrap;
   }
-  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); width: 100%; padding: 14px 18px; font-size: 18px; }
-  .btn:disabled { opacity: .45; cursor: not-allowed; }
-  .btn:focus-visible, input:focus-visible, .seg button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .btn:hover { border-color: var(--mint); }
+  .btn.primary {
+    background: var(--mint); border-color: var(--mint); color: var(--accent-ink); width: 100%; padding: 15px 18px; font-size: 18px;
+    font-weight: 800; letter-spacing: .01em; box-shadow: 0 0 0 0 rgba(95,240,201,0); transition: box-shadow .2s, transform .1s;
+  }
+  .btn.primary:not(:disabled):hover { box-shadow: 0 0 28px rgba(95,240,201,.45); }
+  .btn.primary:not(:disabled):active { transform: translateY(1px); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn:focus-visible, input:focus-visible, .seg button:focus-visible { outline: 3px solid var(--beak); outline-offset: 2px; }
+
+  /* layout: the art on the left, the action on the right */
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; margin-top: 22px; }
+  .grid > * { min-width: 0; }
+  @media (min-width: 900px) {
+    .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 40px; align-items: start; }
+    .art { position: sticky; top: 20px; }
+  }
+  .art { margin: 0; }
+  .art img {
+    display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 18px;
+    border: 1px solid rgba(95,240,201,.35);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 24px 70px rgba(0,0,0,.6), 0 0 60px rgba(95,240,201,.12);
+  }
+  .art figcaption { margin-top: 14px; font-family: "Permanent Marker", cursive; font-size: 22px; color: var(--ink); line-height: 1.25; }
+  .art figcaption b { color: var(--mint); font-weight: 400; }
+  @media (max-width: 899px) { .art figcaption { display: none; } }
 
   /* the total */
-  .total { margin: 44px 0 4px; }
+  .total { margin: 0 0 4px; }
+  .kicker { font-size: 13px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--beak); margin: 0 0 6px; }
   .total .num {
     font-variation-settings: "wdth" 125;
     font-weight: 900;
-    font-size: 104px; /* fitted to the column by fitTotal() */
+    font-size: 96px; /* fitted to the column by fitTotal() */
     line-height: .92;
     letter-spacing: -0.035em;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+    color: var(--ink);
+    text-shadow: 0 0 34px rgba(95,240,201,.18);
   }
-  .total .num .cents { color: var(--muted); font-weight: 700; }
-  .total p { margin: 10px 0 0; color: var(--muted); font-size: 18px; }
+  .total .num .cents { color: var(--mint-dim); font-weight: 700; }
+  .total p { margin: 10px 0 0; color: var(--muted); font-size: 17px; }
 
   /* progress track: two stages, minimum then early launch */
-  .track { margin: 28px 0 6px; }
-  .bar { position: relative; height: 22px; background: var(--track); border-radius: 4px; overflow: hidden; display: flex; }
+  .track { margin: 24px 0 6px; }
+  .bar { position: relative; height: 18px; background: var(--track); border-radius: 999px; overflow: hidden; display: flex; border: 1px solid var(--rule); }
   .stage { position: relative; height: 100%; }
   .stage.a { flex: 0 0 38%; border-right: 2px solid var(--paper); }
   .stage.b { flex: 1 1 auto; }
-  .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--accent); transition: width .9s cubic-bezier(.2,.7,.2,1); }
-  .stage.a .fill.met { background: var(--good); }
+  .fill {
+    position: absolute; inset: 0 auto 0 0; width: 0; transition: width .9s cubic-bezier(.2,.7,.2,1);
+    background: repeating-linear-gradient(-45deg, var(--beak) 0 10px, #ffb35e 10px 20px);
+    background-size: 28px 28px; animation: stripes 1.2s linear infinite;
+  }
+  .stage.a .fill.met { background: repeating-linear-gradient(-45deg, var(--mint) 0 10px, #8ff7da 10px 20px); background-size: 28px 28px; box-shadow: 0 0 16px rgba(95,240,201,.5); }
+  @keyframes stripes { to { background-position: 28px 0; } }
   .ticks { display: flex; font-size: 14px; color: var(--muted); margin-top: 8px; }
   .ticks span:first-child { flex: 0 0 38%; }
   .ticks span:last-child { margin-left: auto; text-align: right; }
-  .ticks b { color: var(--ink); font-weight: 650; }
-  @media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+  .ticks b { color: var(--ink); font-weight: 700; }
+  @media (prefers-reduced-motion: reduce) { .fill { transition: none; animation: none; } }
 
-  .status { margin: 22px 0 32px; font-size: 18px; }
-  .status strong { font-weight: 750; }
-  .status .clock { font-variant-numeric: tabular-nums; }
+  .status { margin: 20px 0 24px; font-size: 18px; }
+  .status strong { font-weight: 800; }
+  .status .clock { font-variant-numeric: tabular-nums; color: var(--mint); }
   .status.good { color: var(--good); }
   .status.bad { color: var(--bad); }
 
   /* action panel */
-  .panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 14px; padding: 20px; }
-  .seg { display: inline-flex; background: var(--track); border-radius: 999px; padding: 4px; margin-bottom: 18px; }
-  .seg button { border: 0; background: transparent; padding: 8px 18px; border-radius: 999px; font-weight: 650; cursor: pointer; color: var(--muted); }
-  .seg button[aria-selected="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(20,32,58,.18); }
-  label { display: block; font-weight: 650; margin-bottom: 6px; }
-  .field { display: flex; align-items: center; border: 2px solid var(--rule); border-radius: 10px; background: var(--paper); padding: 4px 6px 4px 14px; }
-  .field:focus-within { border-color: var(--ink); }
-  .field input { flex: 1; min-width: 0; border: 0; background: transparent; font-size: 26px; font-weight: 700; padding: 8px 0; font-variant-numeric: tabular-nums; outline: none; }
-  .field .unit { color: var(--muted); font-weight: 650; margin: 0 10px; }
-  .field .max { border: 0; background: var(--track); border-radius: 8px; padding: 6px 10px; font-weight: 650; cursor: pointer; }
+  .panel {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 1px solid var(--rule); border-radius: 18px; padding: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.03);
+  }
+  .seg { display: inline-flex; background: var(--track); border-radius: 999px; padding: 4px; margin-bottom: 18px; border: 1px solid var(--rule); }
+  .seg button { border: 0; background: transparent; padding: 8px 18px; border-radius: 999px; font-weight: 700; cursor: pointer; color: var(--muted); }
+  .seg button[aria-selected="true"] { background: var(--mint); color: var(--accent-ink); }
+  .seg button:disabled { opacity: .4; cursor: not-allowed; }
+  label { display: block; font-weight: 700; margin-bottom: 6px; }
+  .field { display: flex; align-items: center; border: 1.5px solid var(--rule); border-radius: 12px; background: #081014; padding: 4px 6px 4px 14px; transition: border-color .15s, box-shadow .15s; }
+  .field:focus-within { border-color: var(--mint); box-shadow: 0 0 0 3px rgba(95,240,201,.15); }
+  .field input { flex: 1; min-width: 0; border: 0; background: transparent; font-size: 26px; font-weight: 800; padding: 8px 0; font-variant-numeric: tabular-nums; outline: none; }
+  .field input::placeholder { color: #3b4f55; }
+  .field .unit { color: var(--muted); font-weight: 700; margin: 0 10px; }
+  .field .max { border: 1px solid var(--rule); background: var(--track); color: var(--mint); border-radius: 8px; padding: 6px 10px; font-weight: 800; cursor: pointer; }
   .hint { color: var(--muted); font-size: 15px; margin: 8px 0 16px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .msg { margin-top: 12px; font-size: 15px; }
   .msg:empty { display: none; }
@@ -113,23 +147,23 @@
   .msg.ok { color: var(--good); }
   .msg a { color: inherit; }
 
-  .rules { margin: 36px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
-  .rules li { padding: 14px 0; border-bottom: 1px solid var(--rule); }
-  .rules li b { font-weight: 700; }
+  .rules { margin: 28px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
+  .rules li { padding: 14px 0; border-bottom: 1px solid var(--rule); color: #c6d6d2; }
+  .rules li b { font-weight: 800; color: var(--ink); }
 
-  footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
+  footer { margin-top: 32px; color: var(--muted); font-size: 13px; }
   footer a { color: inherit; }
   .addr { font-variant-numeric: tabular-nums; word-break: break-all; }
   .seg.small { margin: 0 0 14px 10px; }
   .seg.small button { padding: 6px 14px; font-size: 15px; }
   .tradeTop { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-  .tradeTop h2 { margin: 0; font-size: 20px; font-weight: 750; }
-  .tradeTop p { margin: 0; color: var(--muted); font-size: 15px; }
+  .tradeTop h2 { margin: 0; font-family: "Permanent Marker", cursive; font-weight: 400; font-size: 26px; color: var(--mint); }
+  .tradeTop p { margin: 0; color: var(--muted); font-size: 15px; font-variant-numeric: tabular-nums; }
   .quote { border-top: 1px solid var(--rule); margin: 4px 0 16px; padding-top: 12px; font-size: 15px; display: grid; gap: 4px; }
   .quote:empty { display: none; }
   .quote div { display: flex; justify-content: space-between; gap: 12px; }
   .quote span:first-child { color: var(--muted); }
-  .quote b { font-variant-numeric: tabular-nums; font-weight: 650; text-align: right; }
+  .quote b { font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
   .note { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
   [hidden] { display: none !important; }
 </style>
@@ -137,11 +171,19 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="mark">Daffy<small>$DAFF</small></div>
+    <div class="mark">$DAFFY</div>
     <button class="btn" id="connect" type="button">Connect wallet</button>
   </header>
 
+  <div class="grid">
+  <figure class="art">
+    <img src="daffy-640.jpg" srcset="daffy-640.jpg 640w, daffy.jpg 1254w" sizes="(min-width: 900px) 520px, 100vw" width="1254" height="1254" alt="Daffy, the Degenerate Assistance Fund Fund mascot, at a trading desk">
+    <figcaption>The <b>FFF</b>uture of Degenerate <b>FFF</b>inance.</figcaption>
+  </figure>
+
+  <main>
   <section class="total" aria-live="polite">
+    <p class="kicker">Degenerate Assistance Fund Fund</p>
     <div class="num" id="total">$0<span class="cents">.00</span></div>
     <p id="totalLabel">USDC deposited so far</p>
   </section>
@@ -174,13 +216,13 @@
     </div>
 
     <div id="withdrawPane" hidden>
-      <label for="wdAmt">Withdraw with DAFF</label>
+      <label for="wdAmt">Withdraw with DAFFY</label>
       <div class="field">
         <input id="wdAmt" inputmode="decimal" placeholder="0" autocomplete="off">
-        <span class="unit">DAFF</span>
+        <span class="unit">DAFFY</span>
         <button class="max" id="wdMax" type="button">Max</button>
       </div>
-      <div class="hint"><span id="daffBal">Connect a wallet to see your DAFF</span><span id="wdGet"></span></div>
+      <div class="hint"><span id="daffBal">Connect a wallet to see your DAFFY</span><span id="wdGet"></span></div>
       <button class="btn primary" id="wdBtn" type="button" disabled>Withdraw</button>
     </div>
 
@@ -189,7 +231,7 @@
 
   <section class="panel" id="launchedPanel" hidden>
     <div class="tradeTop">
-      <h2>Trade DAFF</h2>
+      <h2>Trade DAFFY</h2>
       <p id="navLine"></p>
     </div>
     <div>
@@ -211,15 +253,18 @@
     <div class="quote" id="trQuote"></div>
     <button class="btn primary" id="trBtn" type="button" disabled>Enter an amount</button>
     <div class="msg" id="trMsg" role="status"></div>
-    <p class="note">Trades go straight to Daffy's DAFF/USDC and DAFF/HYPE pools on HyperEVM. The treasury buys at 0.6&ndash;0.8&times; NAV and sells new DAFF at 2&ndash;10&times; NAV; other holders may quote in between. Minimum received is set 1% under the quote.</p>
+    <p class="note">Trades go straight to Daffy's DAFFY/USDC and DAFFY/HYPE pools on HyperEVM. The treasury buys at 0.6&ndash;0.8&times; NAV and sells new DAFFY at 2&ndash;10&times; NAV; other holders may quote in between. Minimum received is set 1% under the quote.</p>
     <p class="note" id="noSwap" hidden>Trading here needs the DaffySwap address: set DEFAULT_SWAP in the page, or open it with &amp;swap=0x&hellip;</p>
   </section>
 
   <ul class="rules">
-    <li><b>1 USDC gets you 1 DAFF.</b> Deposits are held in the contract until launch.</li>
+    <li><b>1 USDC gets you 1 DAFFY.</b> Deposits are held in the contract until launch.</li>
     <li><b>Daffy launches</b> when deposits close if at least <span class="minAmt">$100,000</span> is in, or as soon as deposits reach <span class="earlyAmt">$10M</span>.</li>
     <li><b>Until launch, withdraw any time</b> for your full USDC back. If <span class="minAmt">$100,000</span> isn't reached, withdrawals stay open for good.</li>
   </ul>
+
+  </main>
+  </div>
 
   <footer>
     <p>Contract <a class="addr" id="addrLink" href="#" target="_blank" rel="noopener"></a> on HyperEVM.</p>
@@ -231,9 +276,9 @@
 <script>
 (() => {
   // ---- configuration: set your DaffyUSD address here, or open the page with ?core=0x...
-  const DEFAULT_CORE = "";
+  const DEFAULT_CORE = "0xYourDaffyUSD";
   // ---- and the DaffySwap router for the Trade panel (script/DeploySwap.s.sol), or &swap=0x...
-  const DEFAULT_SWAP = "";
+  const DEFAULT_SWAP = "0xYourDaffySwap";
   const params0 = new URLSearchParams(location.search);
   const RPC = params0.get("rpc") || "https://rpc.hyperliquid.xyz/evm"; // ?rpc= for a local test chain
   const CHAIN_ID = 999;
@@ -294,12 +339,12 @@
     fitTotal();
   }
 
-  // the biggest size, up to 104px, at which the total fits on one line
+  // the biggest size, up to 96px, at which the total fits on one line
   function fitTotal() {
     const el = $("total"), box = el.parentElement.clientWidth;
-    el.style.fontSize = "104px";
+    el.style.fontSize = "96px";
     const w = el.scrollWidth;
-    if (w > box) el.style.fontSize = Math.max(32, Math.floor(104 * box / w)) + "px";
+    if (w > box) el.style.fontSize = Math.max(32, Math.floor(96 * box / w)) + "px";
   }
   window.addEventListener("resize", fitTotal);
   document.fonts && document.fonts.ready.then(fitTotal);
@@ -355,9 +400,9 @@
     const st = state.st;
     const conn = !!state.account;
     $("usdcBal").textContent = conn ? `You have ${fmtUsd(state.usdcBal)} USDC` : "Connect a wallet to see your USDC";
-    $("daffBal").textContent = conn ? `You have ${fmtTok(state.daffBal, 18)} DAFF` : "Connect a wallet to see your DAFF";
+    $("daffBal").textContent = conn ? `You have ${fmtTok(state.daffBal, 18)} DAFFY` : "Connect a wallet to see your DAFFY";
     const dep = parseAmt($("depAmt").value, 6), wd = parseAmt($("wdAmt").value, 18);
-    $("depGet").textContent = dep > 0n ? `You get ${fmtTok(dep * 10n ** 12n, 18)} DAFF` : "";
+    $("depGet").textContent = dep > 0n ? `You get ${fmtTok(dep * 10n ** 12n, 18)} DAFFY` : "";
     $("wdGet").textContent = wd > 0n ? `You get ${fmtUsd(wd / 10n ** 12n)} USDC` : "";
     const open = st && !st.isLaunched && !st.failed && Number(st.endsAt) > Date.now() / 1000;
 
@@ -373,8 +418,8 @@
     if (!conn) { wb.textContent = "Connect wallet to withdraw"; wb.disabled = false; }
     else if (st && st.isLaunched) { wb.textContent = "Withdrawals are closed"; wb.disabled = true; }
     else if (wd < 10n ** 12n) { wb.textContent = "Enter an amount"; wb.disabled = true; }
-    else if (wd > state.daffBal) { wb.textContent = "Not enough DAFF"; wb.disabled = true; }
-    else if (state.daffAllow < wd) { wb.textContent = `Approve ${fmtTok(wd, 18)} DAFF`; wb.disabled = false; }
+    else if (wd > state.daffBal) { wb.textContent = "Not enough DAFFY"; wb.disabled = true; }
+    else if (state.daffAllow < wd) { wb.textContent = `Approve ${fmtTok(wd, 18)} DAFFY`; wb.disabled = false; }
     else { wb.textContent = `Withdraw ${fmtUsd(wd / 10n ** 12n)} USDC`; wb.disabled = false; }
   }
 
@@ -399,7 +444,7 @@
       const r = await core.launchStatus();
       state.st = { deposited: r[0], minimum: r[1], earlyAt: r[2], endsAt: r[3], isLaunched: r[4], canLaunch: r[5], failed: r[6] };
       if (state.st.isLaunched) {
-        try { tr.nav = await core.navUsd(); $("navLine").textContent = `NAV $${(Number(tr.nav) / 1e18).toFixed(4)} per DAFF`; } catch {}
+        try { tr.nav = await core.navUsd(); $("navLine").textContent = `NAV $${(Number(tr.nav) / 1e18).toFixed(4)} per DAFFY`; } catch {}
       }
       if (state.account) {
         const [ub, ua, db, da] = await Promise.all([
@@ -468,7 +513,7 @@
     const amt = parseAmt($("depAmt").value, 6);
     const c = core.connect(signer), u = usdc.connect(signer);
     if (state.usdcAllow < amt) await send(() => u.approve(CORE, amt), "Approving USDC.", "USDC approved. Now deposit.");
-    else if (await send(() => c.deposit(amt), `Depositing ${fmtUsd(amt)} USDC.`, `Deposited ${fmtUsd(amt)} USDC. Your DAFF is in your wallet.`)) $("depAmt").value = "";
+    else if (await send(() => c.deposit(amt), `Depositing ${fmtUsd(amt)} USDC.`, `Deposited ${fmtUsd(amt)} USDC. Your DAFFY is in your wallet.`)) $("depAmt").value = "";
     renderForms();
   });
   $("wdBtn").addEventListener("click", async () => {
@@ -476,7 +521,7 @@
     const amt = parseAmt($("wdAmt").value, 18);
     const whole = (amt / 10n ** 12n) * 10n ** 12n;
     const c = core.connect(signer), d = daff.connect(signer);
-    if (state.daffAllow < whole) await send(() => d.approve(CORE, whole), "Approving DAFF.", "DAFF approved. Now withdraw.");
+    if (state.daffAllow < whole) await send(() => d.approve(CORE, whole), "Approving DAFFY.", "DAFFY approved. Now withdraw.");
     else if (await send(() => c.withdrawDeposit(whole), `Withdrawing ${fmtUsd(whole / 10n ** 12n)} USDC.`, `Withdrew ${fmtUsd(whole / 10n ** 12n)} USDC to your wallet.`)) $("wdAmt").value = "";
     renderForms();
   });
@@ -490,8 +535,8 @@
 
   // ---- trading (after launch), through the DaffySwap router
   const inDec = () => tr.buying ? (tr.usdcPool ? 6 : 18) : 18;
-  const inSym = () => tr.buying ? (tr.usdcPool ? "USDC" : "HYPE") : "DAFF";
-  const outSym = () => tr.buying ? "DAFF" : (tr.usdcPool ? "USDC" : "HYPE");
+  const inSym = () => tr.buying ? (tr.usdcPool ? "USDC" : "HYPE") : "DAFFY";
+  const outSym = () => tr.buying ? "DAFFY" : (tr.usdcPool ? "USDC" : "HYPE");
   const outDec = () => tr.buying ? 18 : (tr.usdcPool ? 6 : 18);
   const inBal = () => tr.buying ? (tr.usdcPool ? state.usdcBal : tr.hypeBal) : state.daffBal;
   const needAllow = () => tr.buying ? (tr.usdcPool ? tr.usdcAllowS : null) : tr.daffAllowS;
@@ -520,7 +565,7 @@
     $("tabSell").setAttribute("aria-selected", !tr.buying);
     $("poolUsdcBtn").setAttribute("aria-selected", tr.usdcPool);
     $("poolHypeBtn").setAttribute("aria-selected", !tr.usdcPool);
-    $("trLabel").textContent = tr.buying ? `Pay with ${inSym()}` : `Sell DAFF for ${outSym()}`;
+    $("trLabel").textContent = tr.buying ? `Pay with ${inSym()}` : `Sell DAFFY for ${outSym()}`;
     $("trUnit").textContent = inSym();
     $("trAmt").value = "";
     tr.quote = null; tr.quoteFor = "";
@@ -543,7 +588,7 @@
       const daffAmt = tr.buying ? q.out : q.used, other = tr.buying ? q.used : q.out;
       if (daffAmt > 0n) {
         const px = Number(ethers.formatUnits(other, tr.usdcPool ? 6 : 18)) / Number(ethers.formatUnits(daffAmt, 18));
-        let txt = tr.usdcPool ? `$${px.toFixed(4)} per DAFF` : `${px.toFixed(6)} HYPE per DAFF`;
+        let txt = tr.usdcPool ? `$${px.toFixed(4)} per DAFFY` : `${px.toFixed(6)} HYPE per DAFFY`;
         if (tr.usdcPool && tr.nav > 0n) txt += ` (${(px / (Number(tr.nav) / 1e18)).toFixed(2)}× NAV)`;
         row("Price", txt);
       }
@@ -559,7 +604,7 @@
     else if (allow !== null && allow < amt) { b.textContent = `Approve ${fmtAmt(amt, inDec(), inSym())}`; b.disabled = false; }
     else if (!q) { b.textContent = "Getting a quote…"; b.disabled = true; }
     else if (q.error) { b.textContent = tr.buying ? "Can't buy right now" : "Can't sell right now"; b.disabled = true; }
-    else { b.textContent = tr.buying ? `Buy ${fmtAmt(q.out, 18, "DAFF")}` : `Sell for ${fmtAmt(q.out, outDec(), outSym())}`; b.disabled = false; }
+    else { b.textContent = tr.buying ? `Buy ${fmtAmt(q.out, 18, "DAFFY")}` : `Sell for ${fmtAmt(q.out, outDec(), outSym())}`; b.disabled = false; }
   }
 
   const key = (amt) => `${tr.buying}|${tr.usdcPool}|${amt}`;
@@ -606,8 +651,8 @@
       await run(() => token.connect(signer).approve(SWAP, amt), `Approving ${inSym()}…`, `${inSym()} approved. Now confirm the trade.`);
     } else {
       const q = tr.quote, min = q.out * 99n / 100n, dl = BigInt(Math.floor(Date.now() / 1000) + 600), me = state.account;
-      const label = tr.buying ? `Buying ${fmtAmt(q.out, 18, "DAFF")}…` : `Selling ${fmtAmt(amt, 18, "DAFF")}…`;
-      const done = tr.buying ? `Bought about ${fmtAmt(q.out, 18, "DAFF")}.` : `Sold for about ${fmtAmt(q.out, outDec(), outSym())}.`;
+      const label = tr.buying ? `Buying ${fmtAmt(q.out, 18, "DAFFY")}…` : `Selling ${fmtAmt(amt, 18, "DAFFY")}…`;
+      const done = tr.buying ? `Bought about ${fmtAmt(q.out, 18, "DAFFY")}.` : `Sold for about ${fmtAmt(q.out, outDec(), outSym())}.`;
       const ok = await run(() =>
         tr.buying
           ? (tr.usdcPool ? s.buyWithUsdc(amt, min, me, dl) : s.buyWithHype(min, me, dl, { value: amt }))
@@ -635,7 +680,7 @@
   if (DEMO && params.get("demo") === "trade") {
     state.st = { deposited: 2_374_918_550000n, minimum: 100_000_000000n, earlyAt: 10_000_000_000000n, endsAt: 0n, isLaunched: true, canLaunch: false, failed: false };
     tr.nav = 1_0432n * 10n ** 14n;
-    $("navLine").textContent = "NAV $1.0432 per DAFF";
+    $("navLine").textContent = "NAV $1.0432 per DAFFY";
     $("addrLink").textContent = "demo mode";
     renderStatus();
     return;

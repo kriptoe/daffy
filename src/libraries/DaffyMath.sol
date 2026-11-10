@@ -7,17 +7,17 @@ import {LiquidityAmounts} from "@uniswap/v3-periphery/contracts/libraries/Liquid
 
 /// @title DaffyMath - price, tick and liquidity helpers for DaffyCore
 /// @notice Deployed once as a linked library (public functions) to keep DaffyCore under the
-///         24 KB contract size limit. All prices are HYPE per DAFF in WAD.
+///         24 KB contract size limit. All prices are HYPE per DAFFY in WAD.
 library DaffyMath {
     uint256 internal constant WAD = 1e18;
 
-    /// @notice HYPE per DAFF (WAD) from a pool sqrt price.
+    /// @notice HYPE per DAFFY (WAD) from a pool sqrt price.
     function priceFromSqrt(uint160 sqrtP, bool daffIsToken0) public pure returns (uint256) {
         uint256 priceX128 = Math.mulDiv(uint256(sqrtP), uint256(sqrtP), 1 << 64); // token1 per token0, Q128
         return daffIsToken0 ? Math.mulDiv(priceX128, WAD, 1 << 128) : Math.mulDiv(WAD, 1 << 128, priceX128);
     }
 
-    /// @notice Pool sqrt price for a HYPE-per-DAFF price (WAD), clamped to the valid range.
+    /// @notice Pool sqrt price for a HYPE-per-DAFFY price (WAD), clamped to the valid range.
     function sqrtFromPrice(uint256 price, bool daffIsToken0) public pure returns (uint160) {
         uint256 ratioX192 = daffIsToken0 ? Math.mulDiv(price, 1 << 192, WAD) : Math.mulDiv(WAD, 1 << 192, price);
         uint256 s = Math.sqrt(ratioX192);
@@ -26,7 +26,7 @@ library DaffyMath {
         return uint160(s);
     }
 
-    /// @notice HYPE per DAFF (WAD) at a tick.
+    /// @notice HYPE per DAFFY (WAD) at a tick.
     function priceAtTick(int24 tick, bool daffIsToken0) public pure returns (uint256) {
         return priceFromSqrt(TickMath.getSqrtRatioAtTick(tick), daffIsToken0);
     }
@@ -35,7 +35,7 @@ library DaffyMath {
         return TickMath.getSqrtRatioAtTick(tick);
     }
 
-    /// @notice Ticks covering [low, high] HYPE-per-DAFF prices, rounded outward to the spacing.
+    /// @notice Ticks covering [low, high] HYPE-per-DAFFY prices, rounded outward to the spacing.
     function ticksForPrices(uint256 low, uint256 high, bool daffIsToken0, int24 spacing)
         public
         pure
@@ -107,7 +107,7 @@ library DaffyMath {
         int24 raw = TickMath.getTickAtSqrtRatio(target);
         int24 f = floorTick(raw, spacing);
         bool exact = f == raw && TickMath.getSqrtRatioAtTick(raw) == target;
-        // HYPE-per-DAFF price rises with the tick when DAFF is token0, falls when it is token1.
+        // HYPE-per-DAFFY price rises with the tick when DAFFY is token0, falls when it is token1.
         bool wantLowerSqrt = atMost == daffIsToken0;
         t = wantLowerSqrt || exact ? f : f + spacing;
         if (t < TickMath.MIN_TICK) t = ceilTick(TickMath.MIN_TICK, spacing);
@@ -124,9 +124,9 @@ library DaffyMath {
     }
 
     /// @notice Plan the two protocol positions. Bids (HYPE only) sit in
-    ///         [rangeLow x top, top] with top = min(spot, navLow); asks (DAFF only) sit in
+    ///         [rangeLow x top, top] with top = min(spot, navLow); asks (DAFFY only) sit in
     ///         [bottom, rangeHigh x bottom] with bottom = max(spot, navHigh). So the pool never buys
-    ///         DAFF above NAV or sells it below NAV, wherever the price is. Both positions get the
+    ///         DAFFY above NAV or sells it below NAV, wherever the price is. Both positions get the
     ///         liquidity that `hypeAmount` supports across the full bid range.
     function planPositions(
         uint160 spotSqrt,
@@ -155,7 +155,7 @@ library DaffyMath {
         // Keep each range strictly on its own side of the current tick (single-sided).
         int24 below = floorTick(currentTick, spacing); // ranges with hi <= this hold token1 only
         int24 above = below + spacing; // ranges with lo >= this hold token0 only
-        // HYPE is token1 when DAFF is token0.
+        // HYPE is token1 when DAFFY is token0.
         (p.bidLo, p.bidHi) = daffIsToken0 ? (bA, _min(bB, below)) : (_max(bA, above), bB);
         (p.askLo, p.askHi) = daffIsToken0 ? (_max(aA, above), aB) : (aA, _min(aB, below));
 

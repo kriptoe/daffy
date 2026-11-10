@@ -7,7 +7,7 @@ import {DaffyUSDPools} from "../src/libraries/DaffyUSDPools.sol";
 import {DaffyUSDHyperCore} from "../src/libraries/DaffyUSDHyperCore.sol";
 
 /// @notice Deploys Daffy v2 (the USDC model): the linked libraries, then DaffyUSD, which deploys
-///         DaffyToken and creates both HyperSwap pools (DAFF/USDC at $1, DAFF/WHYPE at $1 of HYPE).
+///         DaffyToken and creates both HyperSwap pools (DAFFY/USDC at $1, DAFFY/WHYPE at $1 of HYPE).
 ///
 /// Required env:
 ///   PRIVATE_KEY    deployer key (needs HyperEVM big blocks enabled: the deploy is ~20M gas)
@@ -34,9 +34,9 @@ contract DeployUSD is Script {
         p.launchDuration = launchDuration;
         p.minLaunchUsdc = 100_000e6; // never launches below $100k
         p.earlyLaunchUsdc = 10_000_000e6; // launches early once $10M is in
-        p.hypeBps = 7500; // 75% HYPE at launch (55% held + 20% as the DAFF/HYPE bid)
+        p.hypeBps = 7500; // 75% HYPE at launch (55% held + 20% as the DAFFY/HYPE bid)
         p.usdcBidBps = 500; // 5% USDC bid (the HYPE bid takes 20%: it can't be overpaid in a dump)
-        p.askBps = 1000; // each pool offers 10% of circulating DAFF at 2x-10x NAV
+        p.askBps = 1000; // each pool offers 10% of circulating DAFFY at 2x-10x NAV
         p.recenterMoveBps = 500; // re-place a pool's positions when NAV moves 5%...
         p.recenterInterval = 7 days; // ...or weekly
         p.incomingHypeBps = 7500; // 75% of new USDC buys HYPE
@@ -99,8 +99,8 @@ contract DeployUSD is Script {
 
         console2.log("DaffyUSD   ", address(core));
         console2.log("DaffyToken ", address(core.token()));
-        console2.log("DAFF/USDC  ", address(core.poolUsdc()));
-        console2.log("DAFF/WHYPE ", address(core.poolHype()));
+        console2.log("DAFFY/USDC  ", address(core.poolUsdc()));
+        console2.log("DAFFY/WHYPE ", address(core.poolHype()));
         console2.log("Test mode:", core.testMode());
         console2.log("Deposits close at", core.launchEnd());
         console2.log("NEXT: send DaffyUSD a few USDC on HyperCore to activate its account");

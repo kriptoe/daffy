@@ -10,9 +10,9 @@ import {DaffyUSD} from "./DaffyUSD.sol";
 import {DaffyUSDPools} from "./libraries/DaffyUSDPools.sol";
 import {IWHYPE} from "./interfaces/IExternal.sol";
 
-/// @title DaffySwap - buy and sell DAFF straight against Daffy's two pools
-/// @notice A small router so a front end can trade DAFF without any DEX website. It talks to the
-///         DAFF/USDC and DAFF/WHYPE pools directly, takes native HYPE in and pays native HYPE out,
+/// @title DaffySwap - buy and sell DAFFY straight against Daffy's two pools
+/// @notice A small router so a front end can trade DAFFY without any DEX website. It talks to the
+///         DAFFY/USDC and DAFFY/WHYPE pools directly, takes native HYPE in and pays native HYPE out,
 ///         and holds nothing between calls. No owner, no fees of its own (the pool fee goes to the
 ///         pool's liquidity, mostly the treasury).
 ///
@@ -21,7 +21,7 @@ import {IWHYPE} from "./interfaces/IExternal.sol";
 ///         bigger than the bid, fills what it can there and the rest stays with the trader, so the
 ///         pool price can't be pushed into empty space. `minOut` protects against the rest.
 ///
-///         Approvals: USDC (buys) or DAFF (sells) to this contract, for the amount you trade.
+///         Approvals: USDC (buys) or DAFFY (sells) to this contract, for the amount you trade.
 contract DaffySwap is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -64,7 +64,7 @@ contract DaffySwap is ReentrancyGuard {
 
     // ------------------------------------------------------------------ trades
 
-    /// @notice Spend up to `usdcIn` USDC on DAFF. Returns the DAFF bought and the USDC spent.
+    /// @notice Spend up to `usdcIn` USDC on DAFFY. Returns the DAFFY bought and the USDC spent.
     function buyWithUsdc(uint256 usdcIn, uint256 minDaff, address to, uint256 deadline)
         external
         nonReentrant
@@ -76,7 +76,7 @@ contract DaffySwap is ReentrancyGuard {
         emit Swapped(msg.sender, true, true, usdcUsed, daffOut);
     }
 
-    /// @notice Spend the HYPE sent (native) on DAFF. Any HYPE the pool didn't take comes back.
+    /// @notice Spend the HYPE sent (native) on DAFFY. Any HYPE the pool didn't take comes back.
     function buyWithHype(uint256 minDaff, address to, uint256 deadline)
         external
         payable
@@ -91,7 +91,7 @@ contract DaffySwap is ReentrancyGuard {
         emit Swapped(msg.sender, false, true, hypeUsed, daffOut);
     }
 
-    /// @notice Sell up to `daffIn` DAFF for USDC.
+    /// @notice Sell up to `daffIn` DAFFY for USDC.
     function sellForUsdc(uint256 daffIn, uint256 minUsdc, address to, uint256 deadline)
         external
         nonReentrant
@@ -103,7 +103,7 @@ contract DaffySwap is ReentrancyGuard {
         emit Swapped(msg.sender, true, false, daffUsed, usdcOut);
     }
 
-    /// @notice Sell up to `daffIn` DAFF for native HYPE.
+    /// @notice Sell up to `daffIn` DAFFY for native HYPE.
     function sellForHype(uint256 daffIn, uint256 minHype, address to, uint256 deadline)
         external
         nonReentrant
@@ -187,7 +187,7 @@ contract DaffySwap is ReentrancyGuard {
         if (amountOut == 0) revert NoLiquidityInRange();
     }
 
-    /// @dev Buying DAFF sends the quote token in: token1 when DAFF is token0, else token0.
+    /// @dev Buying DAFFY sends the quote token in: token1 when DAFFY is token0, else token0.
     function _zeroForOne(bool usdcPool, bool buying) private view returns (bool) {
         bool d0 = usdcPool ? daffIsToken0U : daffIsToken0H;
         return buying ? !d0 : d0;
