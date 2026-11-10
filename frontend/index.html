@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daffy</title>
+<meta name="description" content="Deposit USDC for DAFF before launch, then trade DAFF against the treasury's pools.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #eef1f4;
+    --panel: #ffffff;
+    --ink: #14203a;
+    --muted: #5b6680;
+    --rule: #c9d0da;
+    --track: #dde3ea;
+    --accent: #ff5a1f;
+    --accent-ink: #ffffff;
+    --good: #1f8a5b;
+    --bad: #c2342b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0f1626;
+      --panel: #172035;
+      --ink: #e7ecf3;
+      --muted: #9aa5bb;
+      --rule: #2b3650;
+      --track: #232e46;
+      --accent: #ff6a33;
+      --accent-ink: #120a06;
+      --good: #3fbf87;
+      --bad: #f07067;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Archivo", system-ui, sans-serif;
+    font-variation-settings: "wdth" 100;
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 20px 16px 48px; }
+
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .mark { font-weight: 800; font-variation-settings: "wdth" 125; font-size: 20px; letter-spacing: -0.01em; }
+  .mark small { font-weight: 500; color: var(--muted); font-size: 15px; margin-left: 6px; font-variation-settings: "wdth" 100; }
+
+  button, input { font: inherit; color: inherit; }
+  .btn {
+    border: 2px solid var(--ink); background: transparent; border-radius: 999px;
+    padding: 8px 16px; font-weight: 650; cursor: pointer; white-space: nowrap;
+  }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); width: 100%; padding: 14px 18px; font-size: 18px; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn:focus-visible, input:focus-visible, .seg button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  /* the total */
+  .total { margin: 44px 0 4px; }
+  .total .num {
+    font-variation-settings: "wdth" 125;
+    font-weight: 900;
+    font-size: 104px; /* fitted to the column by fitTotal() */
+    line-height: .92;
+    letter-spacing: -0.035em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .total .num .cents { color: var(--muted); font-weight: 700; }
+  .total p { margin: 10px 0 0; color: var(--muted); font-size: 18px; }
+
+  /* progress track: two stages, minimum then early launch */
+  .track { margin: 28px 0 6px; }
+  .bar { position: relative; height: 22px; background: var(--track); border-radius: 4px; overflow: hidden; display: flex; }
+  .stage { position: relative; height: 100%; }
+  .stage.a { flex: 0 0 38%; border-right: 2px solid var(--paper); }
+  .stage.b { flex: 1 1 auto; }
+  .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--accent); transition: width .9s cubic-bezier(.2,.7,.2,1); }
+  .stage.a .fill.met { background: var(--good); }
+  .ticks { display: flex; font-size: 14px; color: var(--muted); margin-top: 8px; }
+  .ticks span:first-child { flex: 0 0 38%; }
+  .ticks span:last-child { margin-left: auto; text-align: right; }
+  .ticks b { color: var(--ink); font-weight: 650; }
+  @media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+
+  .status { margin: 22px 0 32px; font-size: 18px; }
+  .status strong { font-weight: 750; }
+  .status .clock { font-variant-numeric: tabular-nums; }
+  .status.good { color: var(--good); }
+  .status.bad { color: var(--bad); }
+
+  /* action panel */
+  .panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 14px; padding: 20px; }
+  .seg { display: inline-flex; background: var(--track); border-radius: 999px; padding: 4px; margin-bottom: 18px; }
+  .seg button { border: 0; background: transparent; padding: 8px 18px; border-radius: 999px; font-weight: 650; cursor: pointer; color: var(--muted); }
+  .seg button[aria-selected="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(20,32,58,.18); }
+  label { display: block; font-weight: 650; margin-bottom: 6px; }
+  .field { display: flex; align-items: center; border: 2px solid var(--rule); border-radius: 10px; background: var(--paper); padding: 4px 6px 4px 14px; }
+  .field:focus-within { border-color: var(--ink); }
+  .field input { flex: 1; min-width: 0; border: 0; background: transparent; font-size: 26px; font-weight: 700; padding: 8px 0; font-variant-numeric: tabular-nums; outline: none; }
+  .field .unit { color: var(--muted); font-weight: 650; margin: 0 10px; }
+  .field .max { border: 0; background: var(--track); border-radius: 8px; padding: 6px 10px; font-weight: 650; cursor: pointer; }
+  .hint { color: var(--muted); font-size: 15px; margin: 8px 0 16px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .msg { margin-top: 12px; font-size: 15px; }
+  .msg:empty { display: none; }
+  .msg.err { color: var(--bad); }
+  .msg.ok { color: var(--good); }
+  .msg a { color: inherit; }
+
+  .rules { margin: 36px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
+  .rules li { padding: 14px 0; border-bottom: 1px solid var(--rule); }
+  .rules li b { font-weight: 700; }
+
+  footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
+  footer a { color: inherit; }
+  .addr { font-variant-numeric: tabular-nums; word-break: break-all; }
+  .seg.small { margin: 0 0 14px 10px; }
+  .seg.small button { padding: 6px 14px; font-size: 15px; }
+  .tradeTop { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tradeTop h2 { margin: 0; font-size: 20px; font-weight: 750; }
+  .tradeTop p { margin: 0; color: var(--muted); font-size: 15px; }
+  .quote { border-top: 1px solid var(--rule); margin: 4px 0 16px; padding-top: 12px; font-size: 15px; display: grid; gap: 4px; }
+  .quote:empty { display: none; }
+  .quote div { display: flex; justify-content: space-between; gap: 12px; }
+  .quote span:first-child { color: var(--muted); }
+  .quote b { font-variant-numeric: tabular-nums; font-weight: 650; text-align: right; }
+  .note { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mark">Daffy<small>$DAFF</small></div>
+    <button class="btn" id="connect" type="button">Connect wallet</button>
+  </header>
+
+  <section class="total" aria-live="polite">
+    <div class="num" id="total">$0<span class="cents">.00</span></div>
+    <p id="totalLabel">USDC deposited so far</p>
+  </section>
+
+  <section class="track" aria-label="Progress to launch">
+    <div class="bar" role="img" id="barLabel" aria-label="">
+      <div class="stage a"><div class="fill" id="fillA"></div></div>
+      <div class="stage b"><div class="fill" id="fillB"></div></div>
+    </div>
+    <div class="ticks"><span><b class="minAmt">$100,000</b> needed to launch</span><span><b class="earlyAmt">$10M</b> launches early</span></div>
+  </section>
+
+  <p class="status" id="status">Loading…</p>
+
+  <section class="panel" id="panel">
+    <div class="seg" role="tablist" aria-label="Action">
+      <button role="tab" id="tabDeposit" aria-selected="true" type="button">Deposit</button>
+      <button role="tab" id="tabWithdraw" aria-selected="false" type="button">Withdraw</button>
+    </div>
+
+    <div id="depositPane">
+      <label for="depAmt">Deposit USDC</label>
+      <div class="field">
+        <input id="depAmt" inputmode="decimal" placeholder="0" autocomplete="off">
+        <span class="unit">USDC</span>
+        <button class="max" id="depMax" type="button">Max</button>
+      </div>
+      <div class="hint"><span id="usdcBal">Connect a wallet to see your USDC</span><span id="depGet"></span></div>
+      <button class="btn primary" id="depBtn" type="button" disabled>Deposit</button>
+    </div>
+
+    <div id="withdrawPane" hidden>
+      <label for="wdAmt">Withdraw with DAFF</label>
+      <div class="field">
+        <input id="wdAmt" inputmode="decimal" placeholder="0" autocomplete="off">
+        <span class="unit">DAFF</span>
+        <button class="max" id="wdMax" type="button">Max</button>
+      </div>
+      <div class="hint"><span id="daffBal">Connect a wallet to see your DAFF</span><span id="wdGet"></span></div>
+      <button class="btn primary" id="wdBtn" type="button" disabled>Withdraw</button>
+    </div>
+
+    <div class="msg" id="msg" role="status"></div>
+  </section>
+
+  <section class="panel" id="launchedPanel" hidden>
+    <div class="tradeTop">
+      <h2>Trade DAFF</h2>
+      <p id="navLine"></p>
+    </div>
+    <div>
+      <div class="seg" role="tablist" aria-label="Buy or sell">
+        <button role="tab" id="tabBuy" aria-selected="true" type="button">Buy</button>
+        <button role="tab" id="tabSell" aria-selected="false" type="button">Sell</button>
+      </div><div class="seg small" role="tablist" aria-label="Pool">
+        <button role="tab" id="poolUsdcBtn" aria-selected="true" type="button">USDC</button>
+        <button role="tab" id="poolHypeBtn" aria-selected="false" type="button">HYPE</button>
+      </div>
+    </div>
+    <label for="trAmt" id="trLabel">Pay with USDC</label>
+    <div class="field">
+      <input id="trAmt" inputmode="decimal" placeholder="0" autocomplete="off">
+      <span class="unit" id="trUnit">USDC</span>
+      <button class="max" id="trMax" type="button">Max</button>
+    </div>
+    <div class="hint"><span id="trBal">Connect a wallet to see your balance</span><span></span></div>
+    <div class="quote" id="trQuote"></div>
+    <button class="btn primary" id="trBtn" type="button" disabled>Enter an amount</button>
+    <div class="msg" id="trMsg" role="status"></div>
+    <p class="note">Trades go straight to Daffy's DAFF/USDC and DAFF/HYPE pools on HyperEVM. The treasury buys at 0.6&ndash;0.8&times; NAV and sells new DAFF at 2&ndash;10&times; NAV; other holders may quote in between. Minimum received is set 1% under the quote.</p>
+    <p class="note" id="noSwap" hidden>Trading here needs the DaffySwap address: set DEFAULT_SWAP in the page, or open it with &amp;swap=0x&hellip;</p>
+  </section>
+
+  <ul class="rules">
+    <li><b>1 USDC gets you 1 DAFF.</b> Deposits are held in the contract until launch.</li>
+    <li><b>Daffy launches</b> when deposits close if at least <span class="minAmt">$100,000</span> is in, or as soon as deposits reach <span class="earlyAmt">$10M</span>.</li>
+    <li><b>Until launch, withdraw any time</b> for your full USDC back. If <span class="minAmt">$100,000</span> isn't reached, withdrawals stay open for good.</li>
+  </ul>
+
+  <footer>
+    <p>Contract <a class="addr" id="addrLink" href="#" target="_blank" rel="noopener"></a> on HyperEVM.</p>
+    <p>Unofficial parody of Hyperliquid's Assistance Fund, not affiliated with Hyperliquid. The contracts are unaudited. Only deposit what you can afford to lose.</p>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<script>
+(() => {
+  // ---- configuration: set your DaffyUSD address here, or open the page with ?core=0x...
+  const DEFAULT_CORE = "";
+  // ---- and the DaffySwap router for the Trade panel (script/DeploySwap.s.sol), or &swap=0x...
+  const DEFAULT_SWAP = "";
+  const params0 = new URLSearchParams(location.search);
+  const RPC = params0.get("rpc") || "https://rpc.hyperliquid.xyz/evm"; // ?rpc= for a local test chain
+  const CHAIN_ID = 999;
+  const EXPLORER = "https://hyperevmscan.io";
+
+  const params = new URLSearchParams(location.search);
+  const CORE = params.get("core") || DEFAULT_CORE;
+  const DEMO = params.has("demo");
+  const SWAP = params.get("swap") || DEFAULT_SWAP;
+  const SWAP_ABI = [
+    "function quote(bool usdcPool, bool buying, uint256 amountIn) returns (uint256 amountOut, uint256 amountUsed)",
+    "function buyWithUsdc(uint256 usdcIn, uint256 minDaff, address to, uint256 deadline) returns (uint256, uint256)",
+    "function buyWithHype(uint256 minDaff, address to, uint256 deadline) payable returns (uint256, uint256)",
+    "function sellForUsdc(uint256 daffIn, uint256 minUsdc, address to, uint256 deadline) returns (uint256, uint256)",
+    "function sellForHype(uint256 daffIn, uint256 minHype, address to, uint256 deadline) returns (uint256, uint256)",
+    "error NoLiquidityInRange()",
+    "error TooLittleOut(uint256 out, uint256 minOut)",
+    "error Expired()"
+  ];
+
+  const CORE_ABI = [
+    "function launchStatus() view returns (uint256 deposited, uint256 minimum, uint256 earlyAt, uint256 endsAt, bool isLaunched, bool canLaunch, bool failed)",
+    "function token() view returns (address)",
+    "function usdc() view returns (address)",
+    "function navUsd() view returns (uint256)",
+    "function deposit(uint256 amount)",
+    "function withdrawDeposit(uint256 daffAmount)"
+  ];
+  const ERC20_ABI = [
+    "function balanceOf(address) view returns (uint256)",
+    "function allowance(address,address) view returns (uint256)",
+    "function approve(address,uint256) returns (bool)"
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const state = { st: null, account: null, usdcBal: 0n, daffBal: 0n, usdcAllow: 0n, daffAllow: 0n, tab: "deposit" };
+  let readProvider = null, signer = null, core = null, usdc = null, daff = null, swap = null;
+  const tr = { buying: true, usdcPool: true, quote: null, quoteFor: "", busy: false, hypeBal: 0n, usdcAllowS: 0n, daffAllowS: 0n, nav: 0n };
+
+  const fmtUsd = (v6) => {
+    const n = Number(v6) / 1e6;
+    return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+  const fmtTok = (v, dec) => (Number(v) / 10 ** dec).toLocaleString("en-US", { maximumFractionDigits: 2 });
+  const msg = (text, kind, href) => {
+    const m = $("msg");
+    m.className = "msg" + (kind ? " " + kind : "");
+    m.textContent = text || "";
+    if (href) { const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; a.textContent = "View transaction"; m.append(" ", a); }
+  };
+
+  function renderTotal(dep6) {
+    const [whole, cents] = fmtUsd(dep6).split(".");
+    $("total").innerHTML = "";
+    $("total").append("$" + whole);
+    const c = document.createElement("span"); c.className = "cents"; c.textContent = "." + cents;
+    $("total").append(c);
+    fitTotal();
+  }
+
+  // the biggest size, up to 104px, at which the total fits on one line
+  function fitTotal() {
+    const el = $("total"), box = el.parentElement.clientWidth;
+    el.style.fontSize = "104px";
+    const w = el.scrollWidth;
+    if (w > box) el.style.fontSize = Math.max(32, Math.floor(104 * box / w)) + "px";
+  }
+  window.addEventListener("resize", fitTotal);
+  document.fonts && document.fonts.ready.then(fitTotal);
+
+  // $100,000 / $10M style amounts for labels
+  function compact(v6) {
+    const n = Number(v6) / 1e6;
+    if (n >= 1e6) return "$" + (n / 1e6).toLocaleString("en-US", { maximumFractionDigits: 2 }) + "M";
+    return "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  }
+
+  function renderStatus() {
+    const st = state.st; if (!st) return;
+    document.querySelectorAll(".minAmt").forEach(e => e.textContent = compact(st.minimum));
+    document.querySelectorAll(".earlyAmt").forEach(e => e.textContent = compact(st.earlyAt));
+    renderTotal(st.deposited);
+    const dep = Number(st.deposited), min = Number(st.minimum), early = Number(st.earlyAt);
+    const a = Math.min(1, dep / min);
+    const b = dep <= min ? 0 : Math.min(1, (dep - min) / (early - min));
+    $("fillA").style.width = (a * 100) + "%";
+    $("fillA").classList.toggle("met", dep >= min);
+    $("fillB").style.width = (b * 100) + "%";
+    $("barLabel").setAttribute("aria-label", `$${fmtUsd(st.deposited)} of $${fmtUsd(st.minimum)} needed; launches early at $${fmtUsd(st.earlyAt)}`);
+
+    const s = $("status"); s.className = "status";
+    const left = Number(st.endsAt) - Date.now() / 1000;
+    if (st.isLaunched) {
+      s.textContent = "Launched."; s.classList.add("good");
+      $("totalLabel").textContent = "USDC deposited before launch";
+    } else if (st.failed) {
+      s.innerHTML = `<strong>The ${compact(st.minimum)} minimum wasn't reached.</strong> Daffy won't launch. Withdraw your USDC any time.`;
+      s.classList.add("bad");
+    } else if (st.canLaunch) {
+      s.innerHTML = "<strong>Ready to launch.</strong> Anyone can start it now.";
+      s.classList.add("good");
+    } else {
+      const d = Math.floor(left / 86400), h = Math.floor((left % 86400) / 3600), m = Math.floor((left % 3600) / 60), sec = Math.floor(left % 60);
+      const need = Math.max(0, min - dep);
+      s.innerHTML = `Deposits close in <strong class="clock">${d}d ${String(h).padStart(2,"0")}h ${String(m).padStart(2,"0")}m ${String(sec).padStart(2,"0")}s</strong>` +
+        (need > 0 ? `. $${fmtUsd(BigInt(need))} more needed to launch.` : `. The minimum is in: it launches when the window closes.`);
+    }
+
+    const open = !st.isLaunched && !st.failed && left > 0;
+    $("panel").hidden = st.isLaunched;
+    $("launchedPanel").hidden = !st.isLaunched;
+    $("tabDeposit").disabled = !open;
+    if (!open && state.tab === "deposit") setTab("withdraw");
+    renderForms();
+    if (st.isLaunched) renderTrade();
+  }
+
+  function renderForms() {
+    const st = state.st;
+    const conn = !!state.account;
+    $("usdcBal").textContent = conn ? `You have ${fmtUsd(state.usdcBal)} USDC` : "Connect a wallet to see your USDC";
+    $("daffBal").textContent = conn ? `You have ${fmtTok(state.daffBal, 18)} DAFF` : "Connect a wallet to see your DAFF";
+    const dep = parseAmt($("depAmt").value, 6), wd = parseAmt($("wdAmt").value, 18);
+    $("depGet").textContent = dep > 0n ? `You get ${fmtTok(dep * 10n ** 12n, 18)} DAFF` : "";
+    $("wdGet").textContent = wd > 0n ? `You get ${fmtUsd(wd / 10n ** 12n)} USDC` : "";
+    const open = st && !st.isLaunched && !st.failed && Number(st.endsAt) > Date.now() / 1000;
+
+    const db = $("depBtn");
+    if (!conn) { db.textContent = "Connect wallet to deposit"; db.disabled = false; }
+    else if (!open) { db.textContent = "Deposits are closed"; db.disabled = true; }
+    else if (dep === 0n) { db.textContent = "Enter an amount"; db.disabled = true; }
+    else if (dep > state.usdcBal) { db.textContent = "Not enough USDC"; db.disabled = true; }
+    else if (state.usdcAllow < dep) { db.textContent = `Approve ${fmtUsd(dep)} USDC`; db.disabled = false; }
+    else { db.textContent = `Deposit ${fmtUsd(dep)} USDC`; db.disabled = false; }
+
+    const wb = $("wdBtn");
+    if (!conn) { wb.textContent = "Connect wallet to withdraw"; wb.disabled = false; }
+    else if (st && st.isLaunched) { wb.textContent = "Withdrawals are closed"; wb.disabled = true; }
+    else if (wd < 10n ** 12n) { wb.textContent = "Enter an amount"; wb.disabled = true; }
+    else if (wd > state.daffBal) { wb.textContent = "Not enough DAFF"; wb.disabled = true; }
+    else if (state.daffAllow < wd) { wb.textContent = `Approve ${fmtTok(wd, 18)} DAFF`; wb.disabled = false; }
+    else { wb.textContent = `Withdraw ${fmtUsd(wd / 10n ** 12n)} USDC`; wb.disabled = false; }
+  }
+
+  function parseAmt(v, dec) {
+    v = (v || "").replace(/,/g, "").trim();
+    if (!/^\d*\.?\d*$/.test(v) || v === "" || v === ".") return 0n;
+    try { return ethers.parseUnits(v, dec); } catch { return 0n; }
+  }
+
+  function setTab(t) {
+    state.tab = t;
+    $("tabDeposit").setAttribute("aria-selected", t === "deposit");
+    $("tabWithdraw").setAttribute("aria-selected", t === "withdraw");
+    $("depositPane").hidden = t !== "deposit";
+    $("withdrawPane").hidden = t !== "withdraw";
+    msg("");
+  }
+
+  async function refresh() {
+    if (DEMO || !core || !usdc) return;
+    try {
+      const r = await core.launchStatus();
+      state.st = { deposited: r[0], minimum: r[1], earlyAt: r[2], endsAt: r[3], isLaunched: r[4], canLaunch: r[5], failed: r[6] };
+      if (state.st.isLaunched) {
+        try { tr.nav = await core.navUsd(); $("navLine").textContent = `NAV $${(Number(tr.nav) / 1e18).toFixed(4)} per DAFF`; } catch {}
+      }
+      if (state.account) {
+        const [ub, ua, db, da] = await Promise.all([
+          usdc.balanceOf(state.account), usdc.allowance(state.account, CORE),
+          daff.balanceOf(state.account), daff.allowance(state.account, CORE)
+        ]);
+        Object.assign(state, { usdcBal: ub, usdcAllow: ua, daffBal: db, daffAllow: da });
+        if (state.st.isLaunched && swap) {
+          const [hb, us, ds] = await Promise.all([
+            readProvider.getBalance(state.account), usdc.allowance(state.account, SWAP), daff.allowance(state.account, SWAP)
+          ]);
+          Object.assign(tr, { hypeBal: hb, usdcAllowS: us, daffAllowS: ds });
+        }
+      }
+      renderStatus();
+    } catch (e) {
+      $("status").textContent = "Couldn't read the contract. Check your connection and refresh.";
+      $("status").className = "status bad";
+      console.error(e);
+    }
+  }
+
+  async function ensureChain(eth) {
+    const hex = "0x" + CHAIN_ID.toString(16);
+    try { await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: hex }] }); }
+    catch (e) {
+      if (e.code === 4902) {
+        await eth.request({ method: "wallet_addEthereumChain", params: [{ chainId: hex, chainName: "HyperEVM", rpcUrls: [RPC], nativeCurrency: { name: "HYPE", symbol: "HYPE", decimals: 18 }, blockExplorerUrls: [EXPLORER] }] });
+      } else throw e;
+    }
+  }
+
+  async function connect() {
+    const eth = window.ethereum;
+    if (!eth) { msg("No wallet found. Install Rabby or MetaMask, then reload this page.", "err"); return; }
+    try {
+      await eth.request({ method: "eth_requestAccounts" });
+      await ensureChain(eth);
+      const bp = new ethers.BrowserProvider(eth);
+      signer = await bp.getSigner();
+      state.account = await signer.getAddress();
+      $("connect").textContent = state.account.slice(0, 6) + "…" + state.account.slice(-4);
+      eth.on && eth.on("accountsChanged", () => location.reload());
+      eth.on && eth.on("chainChanged", () => location.reload());
+      await refresh();
+    } catch (e) { msg(e.shortMessage || e.message || "Couldn't connect the wallet.", "err"); }
+  }
+
+  async function send(fn, pending, done) {
+    try {
+      msg(pending + " Confirm in your wallet.");
+      const tx = await fn();
+      msg(pending + " Waiting for the transaction…", "", `${EXPLORER}/tx/${tx.hash}`);
+      await tx.wait();
+      msg(done, "ok", `${EXPLORER}/tx/${tx.hash}`);
+      await refresh();
+      return true;
+    } catch (e) {
+      const t = e.code === "ACTION_REJECTED" ? "Cancelled in the wallet." : (e.shortMessage || e.reason || e.message || "The transaction failed.");
+      msg(t, "err");
+    }
+  }
+
+  $("depBtn").addEventListener("click", async () => {
+    if (!state.account) return connect();
+    const amt = parseAmt($("depAmt").value, 6);
+    const c = core.connect(signer), u = usdc.connect(signer);
+    if (state.usdcAllow < amt) await send(() => u.approve(CORE, amt), "Approving USDC.", "USDC approved. Now deposit.");
+    else if (await send(() => c.deposit(amt), `Depositing ${fmtUsd(amt)} USDC.`, `Deposited ${fmtUsd(amt)} USDC. Your DAFF is in your wallet.`)) $("depAmt").value = "";
+    renderForms();
+  });
+  $("wdBtn").addEventListener("click", async () => {
+    if (!state.account) return connect();
+    const amt = parseAmt($("wdAmt").value, 18);
+    const whole = (amt / 10n ** 12n) * 10n ** 12n;
+    const c = core.connect(signer), d = daff.connect(signer);
+    if (state.daffAllow < whole) await send(() => d.approve(CORE, whole), "Approving DAFF.", "DAFF approved. Now withdraw.");
+    else if (await send(() => c.withdrawDeposit(whole), `Withdrawing ${fmtUsd(whole / 10n ** 12n)} USDC.`, `Withdrew ${fmtUsd(whole / 10n ** 12n)} USDC to your wallet.`)) $("wdAmt").value = "";
+    renderForms();
+  });
+  $("depMax").addEventListener("click", () => { $("depAmt").value = ethers.formatUnits(state.usdcBal, 6); renderForms(); });
+  $("wdMax").addEventListener("click", () => { $("wdAmt").value = ethers.formatUnits(state.daffBal, 18); renderForms(); });
+  $("depAmt").addEventListener("input", renderForms);
+  $("wdAmt").addEventListener("input", renderForms);
+  $("tabDeposit").addEventListener("click", () => setTab("deposit"));
+  $("tabWithdraw").addEventListener("click", () => setTab("withdraw"));
+  $("connect").addEventListener("click", connect);
+
+  // ---- trading (after launch), through the DaffySwap router
+  const inDec = () => tr.buying ? (tr.usdcPool ? 6 : 18) : 18;
+  const inSym = () => tr.buying ? (tr.usdcPool ? "USDC" : "HYPE") : "DAFF";
+  const outSym = () => tr.buying ? "DAFF" : (tr.usdcPool ? "USDC" : "HYPE");
+  const outDec = () => tr.buying ? 18 : (tr.usdcPool ? 6 : 18);
+  const inBal = () => tr.buying ? (tr.usdcPool ? state.usdcBal : tr.hypeBal) : state.daffBal;
+  const needAllow = () => tr.buying ? (tr.usdcPool ? tr.usdcAllowS : null) : tr.daffAllowS;
+  const trMsg = (text, kind, href) => {
+    const m = $("trMsg"); m.className = "msg" + (kind ? " " + kind : ""); m.textContent = text || "";
+    if (href) { const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; a.textContent = "View transaction"; m.append(" ", a); }
+  };
+  const fmtAmt = (v, dec, sym) => {
+    const n = Number(ethers.formatUnits(v, dec));
+    const d = sym === "USDC" ? 2 : (n >= 100 ? 2 : n >= 1 ? 4 : 6);
+    return n.toLocaleString("en-US", { minimumFractionDigits: sym === "USDC" ? 2 : 0, maximumFractionDigits: d }) + " " + sym;
+  };
+  const errText = (e) => {
+    const name = e && (e.revert && e.revert.name || (e.info && e.info.error && e.info.error.data && swap && (() => { try { return swap.interface.parseError(e.info.error.data).name; } catch { return ""; } })()));
+    if (name === "NoLiquidityInRange" || /NoLiquidityInRange/.test(String(e && (e.shortMessage || e.message)))) return "Nothing to trade in the treasury's range right now. Try the other pool, or a smaller amount.";
+    if (name === "TooLittleOut") return "The price moved more than 1% since the quote. Try again.";
+    if (name === "Expired") return "The trade took too long to confirm. Try again.";
+    if (e && e.code === "ACTION_REJECTED") return "Cancelled in the wallet.";
+    return (e && (e.shortMessage || e.reason || e.message)) || "The trade failed.";
+  };
+
+  function setTrade(buying, usdcPool) {
+    if (buying !== undefined) tr.buying = buying;
+    if (usdcPool !== undefined) tr.usdcPool = usdcPool;
+    $("tabBuy").setAttribute("aria-selected", tr.buying);
+    $("tabSell").setAttribute("aria-selected", !tr.buying);
+    $("poolUsdcBtn").setAttribute("aria-selected", tr.usdcPool);
+    $("poolHypeBtn").setAttribute("aria-selected", !tr.usdcPool);
+    $("trLabel").textContent = tr.buying ? `Pay with ${inSym()}` : `Sell DAFF for ${outSym()}`;
+    $("trUnit").textContent = inSym();
+    $("trAmt").value = "";
+    tr.quote = null; tr.quoteFor = "";
+    trMsg("");
+    renderTrade();
+  }
+
+  function renderTrade() {
+    $("noSwap").hidden = !!swap;
+    const conn = !!state.account;
+    $("trBal").textContent = conn ? `You have ${fmtAmt(inBal(), inDec(), inSym())}` : "Connect a wallet to see your balance";
+    const amt = parseAmt($("trAmt").value, inDec());
+    const q = tr.quote && tr.quoteFor === key(amt) ? tr.quote : null;
+    const box = $("trQuote"); box.innerHTML = "";
+    const row = (a, b) => { const d = document.createElement("div"); const x = document.createElement("span"); x.textContent = a; const y = document.createElement("b"); y.textContent = b; d.append(x, y); box.append(d); };
+    if (q && q.error) row("Quote", q.error);
+    else if (q) {
+      row("You get about", fmtAmt(q.out, outDec(), outSym()));
+      row("Minimum received", fmtAmt(q.out * 99n / 100n, outDec(), outSym()));
+      const daffAmt = tr.buying ? q.out : q.used, other = tr.buying ? q.used : q.out;
+      if (daffAmt > 0n) {
+        const px = Number(ethers.formatUnits(other, tr.usdcPool ? 6 : 18)) / Number(ethers.formatUnits(daffAmt, 18));
+        let txt = tr.usdcPool ? `$${px.toFixed(4)} per DAFF` : `${px.toFixed(6)} HYPE per DAFF`;
+        if (tr.usdcPool && tr.nav > 0n) txt += ` (${(px / (Number(tr.nav) / 1e18)).toFixed(2)}× NAV)`;
+        row("Price", txt);
+      }
+      if (q.used < amt) row("Fills", `${fmtAmt(q.used, inDec(), inSym())} of it; the rest stays with you`);
+    }
+    const b = $("trBtn");
+    const allow = needAllow();
+    if (!swap) { b.textContent = "Trading isn't set up on this page"; b.disabled = true; }
+    else if (!conn) { b.textContent = "Connect wallet to trade"; b.disabled = false; }
+    else if (tr.busy) { b.disabled = true; }
+    else if (amt === 0n) { b.textContent = "Enter an amount"; b.disabled = true; }
+    else if (amt > inBal()) { b.textContent = `Not enough ${inSym()}`; b.disabled = true; }
+    else if (allow !== null && allow < amt) { b.textContent = `Approve ${fmtAmt(amt, inDec(), inSym())}`; b.disabled = false; }
+    else if (!q) { b.textContent = "Getting a quote…"; b.disabled = true; }
+    else if (q.error) { b.textContent = tr.buying ? "Can't buy right now" : "Can't sell right now"; b.disabled = true; }
+    else { b.textContent = tr.buying ? `Buy ${fmtAmt(q.out, 18, "DAFF")}` : `Sell for ${fmtAmt(q.out, outDec(), outSym())}`; b.disabled = false; }
+  }
+
+  const key = (amt) => `${tr.buying}|${tr.usdcPool}|${amt}`;
+  let quoteTimer = null;
+  function requestQuote() {
+    clearTimeout(quoteTimer);
+    const amt = parseAmt($("trAmt").value, inDec());
+    tr.quote = null; tr.quoteFor = "";
+    renderTrade();
+    if (!swap || amt === 0n) return;
+    quoteTimer = setTimeout(async () => {
+      const k = key(amt);
+      try {
+        const r = await swap.quote.staticCall(tr.usdcPool, tr.buying, amt);
+        if (k !== key(parseAmt($("trAmt").value, inDec()))) return;
+        tr.quote = { out: r[0], used: r[1] }; tr.quoteFor = k;
+      } catch (e) {
+        if (k !== key(parseAmt($("trAmt").value, inDec()))) return;
+        tr.quote = { error: errText(e) }; tr.quoteFor = k;
+      }
+      renderTrade();
+    }, 300);
+  }
+
+  $("trBtn").addEventListener("click", async () => {
+    if (!state.account) return connect();
+    const amt = parseAmt($("trAmt").value, inDec());
+    const allow = needAllow();
+    const s = swap.connect(signer);
+    tr.busy = true;
+    const run = async (fn, pending, done) => {
+      try {
+        $("trBtn").textContent = pending;
+        trMsg(pending + " Confirm in your wallet.");
+        const tx = await fn();
+        trMsg(pending + " Waiting for the transaction…", "", `${EXPLORER}/tx/${tx.hash}`);
+        await tx.wait();
+        trMsg(done, "ok", `${EXPLORER}/tx/${tx.hash}`);
+        return true;
+      } catch (e) { trMsg(errText(e), "err"); return false; }
+    };
+    if (allow !== null && allow < amt) {
+      const token = tr.buying ? usdc : daff;
+      await run(() => token.connect(signer).approve(SWAP, amt), `Approving ${inSym()}…`, `${inSym()} approved. Now confirm the trade.`);
+    } else {
+      const q = tr.quote, min = q.out * 99n / 100n, dl = BigInt(Math.floor(Date.now() / 1000) + 600), me = state.account;
+      const label = tr.buying ? `Buying ${fmtAmt(q.out, 18, "DAFF")}…` : `Selling ${fmtAmt(amt, 18, "DAFF")}…`;
+      const done = tr.buying ? `Bought about ${fmtAmt(q.out, 18, "DAFF")}.` : `Sold for about ${fmtAmt(q.out, outDec(), outSym())}.`;
+      const ok = await run(() =>
+        tr.buying
+          ? (tr.usdcPool ? s.buyWithUsdc(amt, min, me, dl) : s.buyWithHype(min, me, dl, { value: amt }))
+          : (tr.usdcPool ? s.sellForUsdc(amt, min, me, dl) : s.sellForHype(amt, min, me, dl)),
+        label, done);
+      if (ok) $("trAmt").value = "";
+    }
+    tr.busy = false;
+    await refresh();
+    requestQuote();
+  });
+  $("trAmt").addEventListener("input", requestQuote);
+  $("trMax").addEventListener("click", () => {
+    let v = inBal();
+    if (tr.buying && !tr.usdcPool) v = v > 5n * 10n ** 16n ? v - 5n * 10n ** 16n : 0n; // keep 0.05 HYPE for gas
+    $("trAmt").value = ethers.formatUnits(v, inDec());
+    requestQuote();
+  });
+  $("tabBuy").addEventListener("click", () => setTrade(true));
+  $("tabSell").addEventListener("click", () => setTrade(false));
+  $("poolUsdcBtn").addEventListener("click", () => setTrade(undefined, true));
+  $("poolHypeBtn").addEventListener("click", () => setTrade(undefined, false));
+
+  // ---- start
+  if (DEMO && params.get("demo") === "trade") {
+    state.st = { deposited: 2_374_918_550000n, minimum: 100_000_000000n, earlyAt: 10_000_000_000000n, endsAt: 0n, isLaunched: true, canLaunch: false, failed: false };
+    tr.nav = 1_0432n * 10n ** 14n;
+    $("navLine").textContent = "NAV $1.0432 per DAFF";
+    $("addrLink").textContent = "demo mode";
+    renderStatus();
+    return;
+  }
+  if (DEMO) {
+    state.st = { deposited: 2_374_918_550000n, minimum: 100_000_000000n, earlyAt: 10_000_000_000000n, endsAt: BigInt(Math.floor(Date.now() / 1000) + 4 * 86400 + 7 * 3600), isLaunched: false, canLaunch: false, failed: false };
+    $("addrLink").textContent = "demo mode";
+    renderStatus();
+    setInterval(renderStatus, 1000);
+    return;
+  }
+  if (!CORE) {
+    $("status").textContent = "No contract set. Open this page with ?core=0x… or set DEFAULT_CORE in the file.";
+    $("status").className = "status bad";
+    return;
+  }
+  $("addrLink").textContent = CORE;
+  $("addrLink").href = `${EXPLORER}/address/${CORE}`;
+  readProvider = new ethers.JsonRpcProvider(RPC, CHAIN_ID, { staticNetwork: ethers.Network.from(CHAIN_ID) });
+  core = new ethers.Contract(CORE, CORE_ABI, readProvider);
+  if (SWAP) swap = new ethers.Contract(SWAP, SWAP_ABI, readProvider);
+  (async () => {
+    try {
+      const [ua, ta] = await Promise.all([core.usdc(), core.token()]);
+      usdc = new ethers.Contract(ua, ERC20_ABI, readProvider);
+      daff = new ethers.Contract(ta, ERC20_ABI, readProvider);
+      await refresh();
+      setInterval(refresh, 15000);
+      setInterval(renderStatus, 1000);
+    } catch (e) {
+      $("status").textContent = "Couldn't read the contract at that address. Check it's a DaffyUSD contract on HyperEVM.";
+      $("status").className = "status bad";
+      console.error(e);
+    }
+  })();
+})();
+</script>
+</body>
+</html>
