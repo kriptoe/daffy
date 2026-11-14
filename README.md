@@ -4,8 +4,7 @@ A HyperEVM meme token backed by a USDC-launched treasury that goes 75% HYPE, buy
 sells HYPE after a rally. Unofficial parody of Hyperliquid's Assistance Fund — not affiliated with
 Hyperliquid.
 
-> **UNAUDITED.** These contracts have a thorough test suite but no external audit. Do not deploy with
-> real funds until they have been audited.
+> **UNAUDITED.** These contracts have a thorough test suite but no external audit. 
 
 ## How it works
 
