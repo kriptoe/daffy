@@ -1,6 +1,6 @@
 # Daffy ($DAFFY) — Degenerate Assistance Fund Fund
 
-A HyperEVM meme token backed by a USDC-launched treasury that goes 75% HYPE, buys big dips and only
+A HyperEVM meme token backed by a USDC-launched treasury that buys 75% HYPE on launch, the remaining funds are to buy dips and only
 sells HYPE after a rally.
 
 > **UNAUDITED.** These contracts have a thorough test suite but no external audit. 
